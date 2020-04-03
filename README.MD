@@ -30,4 +30,15 @@ https://medium.com/@rkbalgi/app-mesh-routing-internals-c0344d3527da
 3. Build the envoy using Dockerfile and envoy config file present in extras/envoy (may need to edit config file based on service instance ip's)
 
 
+### Handy Commands
+
+docker build -f Dockerfile_envoy -t local_envoy .
+docker run -d -p 8001:8001 -p 8002:8002 local_envoy
+
+
+<pre>
+λ curl http://192.168.99.100:8002/kotlin/test
+Hello there!!. The server is running @  d2bc2efb96ca/172.17.0.7: 8080 and the time is 2020-04-03T18:28:21.364939
+</pre>
+
  
