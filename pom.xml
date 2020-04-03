@@ -1,15 +1,18 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.acme</groupId>
   <artifactId>microservices-pg</artifactId>
   <version>1.0-SNAPSHOT</version>
   <properties>
     <surefire-plugin.version>3.0.0-M4</surefire-plugin.version>
-    <maven.compiler.target>12</maven.compiler.target>
-    <maven.compiler.source>12</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
     <quarkus.version>1.3.1.Final</quarkus.version>
+    <kotlin.version>1.3.71</kotlin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencyManagement>
@@ -42,6 +45,23 @@
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-client</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test</artifactId>
+      <version>${kotlin.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-script-runtime</artifactId>
+      <version>${kotlin.version}</version>
+      <scope>compile</scope>
+    </dependency>
 
 
   </dependencies>
@@ -59,6 +79,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
@@ -68,8 +89,83 @@
           </systemProperties>
         </configuration>
       </plugin>
+
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <sourceDirs>
+                <source>src/main/java</source>
+                <source>src/main/kotlin</source>
+              </sourceDirs>
+
+              <compilerPlugins>
+                <plugin>all-open</plugin>
+              </compilerPlugins>
+
+              <pluginOptions>
+                <!-- Each annotation is placed on its own line -->
+                <option>all-open:annotation=javax.ws.rs.Path</option>
+                <option>all-open:annotation=javax.enterprise.context.ApplicationScoped</option>
+              </pluginOptions>
+            </configuration>
+
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <dependencies>
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-allopen</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+        </dependencies>
+
+
+        <configuration>
+          <jvmTarget>1.8</jvmTarget>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>testCompile</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>native</id>
@@ -106,11 +202,52 @@
                 </goals>
                 <configuration>
                   <systemProperties>
-                    <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                    <native.image.path>
+                      ${project.build.directory}/${project.build.finalName}-runner
+                    </native.image.path>
                   </systemProperties>
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+
+          <plugin>
+            <artifactId>kotlin-maven-plugin</artifactId>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <version>${kotlin.version}</version>
+            <executions>
+              <execution>
+                <id>compile</id>
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>test-compile</id>
+                <goals>
+                  <goal>test-compile</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <compilerPlugins>
+                <plugin>all-open</plugin>
+              </compilerPlugins>
+
+              <pluginOptions>
+                <!-- Each annotation is placed on its own line -->
+                <option>all-open:annotation=javax.ws.rs.Path</option>
+                <option>all-open:annotation=javax.enterprise.context.ApplicationScoped</option>
+              </pluginOptions>
+            </configuration>
+
+            <dependencies>
+              <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-allopen</artifactId>
+                <version>${kotlin.version}</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>

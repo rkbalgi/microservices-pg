@@ -1,3 +1,5 @@
+## Notes for AppMesh demo
+
 A simple QuarkusIO based microservice that I developed for testing AWS App Mesh. The microservice has 
 3 endpoints
 * /greeting/test - just like a ping, returns OK
@@ -20,3 +22,12 @@ Some more details here -
 
 https://medium.com/@rkbalgi/my-experiment-with-aws-app-mesh-41600fe3189f
 https://medium.com/@rkbalgi/app-mesh-routing-internals-c0344d3527da
+
+
+## Notes for running aggregate cluster demo on envoy
+1. The relevant microservices are present in package _src/main/kotlin
+2. Build the dockerfile for service using src/docker/Dockerfile.jvm and run 6 instances of it, make note of each instance ip and include it in envoy.yaml (see below) 
+3. Build the envoy using Dockerfile and envoy config file present in extras/envoy (may need to edit config file based on service instance ip's)
+
+
+ 
