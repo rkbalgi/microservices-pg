@@ -23,8 +23,9 @@ Some more details here -
 https://medium.com/@rkbalgi/my-experiment-with-aws-app-mesh-41600fe3189f
 https://medium.com/@rkbalgi/app-mesh-routing-internals-c0344d3527da
 
-
+<hr></hr>
 ## Notes for running aggregate cluster demo on Envoyproxy
+__if you have any issues/questions please open an issue on this github project, I'll be happy to look at it__
 
 Envoyproxy version - 
 <pre>
@@ -90,7 +91,7 @@ C:\Users\rkbal\IdeaProjects\appmesh-microsrvc\extras\envoy (master -> origin)
 Hello there!!. The server is running @  feda26a2c650/172.17.0.4: 8080 and the time is 2020-04-05T13:19:51.596696
 </pre>
 
-## Generating SSL self signed certificate
+#### Generating SSL self signed certificate
 <pre>
 OpenSSL> genrsa -out rsa_key.key
 Generating RSA private key, 2048 bit long modulus (2 primes)
