@@ -37,13 +37,18 @@ Envoyproxy version -
 /usr/local/bin/envoy  version: b67c14052c49890a7e3afe614d50979c346c024b/1.13.1/Clean/RELEASE/BoringSSL
 </pre>
 
+### Steps
+
+#### Run application
 1. The microservices used are present in package _src/main/kotlin_ and envoy files in _extras/envoy_
 2. Build the dockerfile for service using src/docker/Dockerfile.jvm and run 6 instances of it, make note of each instance ip and include it in envoy.yaml (see below) 
-3. Build the envoy using Dockerfile and envoy config file present in extras/envoy (may need to edit config file based on service instance ip's)
 
 
-### Handy Commands
+
+
 #### Building and running envoy
+Build the envoy using Dockerfile and envoy config file present in extras/envoy (may need to edit config file based on service instance ip's)
+
 <pre>
 docker build -f Dockerfile_envoy -t local_envoy .
 docker run -d -p 8001:8001 -p 8002:8002 local_envoy
@@ -74,7 +79,7 @@ Example of running a /kotlin/test
 Hello there!!. The server is running @  d2bc2efb96ca/172.17.0.7: 8080 and the time is 2020-04-03T18:28:21.364939
 </pre>
 
-#### Cluster set up and Tests
+#### Aggrgate cluster set up and Tests
 I have 3 instances in each cluster
 In kotlin_cluster_1, first two endpoints have priority 0 and the third one has priority 1
 In the second cluster, no priority is specified so all instances have priority 0
