@@ -34,14 +34,28 @@ static_resources:
                   - name: envoy.router
                     typed_config: {}
   #https://www.envoyproxy.io/docs/envoy/latest/api-v2/api/v2/cluster.proto
+  #https://github.com/envoyproxy/envoy/blob/86ac9389fa0ad940879352b012a0dc73d89b90b0/test/extensions/clusters/aggregate/cluster_integration_test.cc
   clusters:
     - name: kotlin_srvc_cluster
+      connect_timeout: 0.25s
+      lb_policy: CLUSTER_PROVIDED
+      http2_protocol_options: {}
+      cluster_type:
+        name: envoy.clusters.aggregate
+        typed_config:
+          "@type": type.googleapis.com/envoy.config.cluster.aggregate.v2alpha.ClusterConfig
+          clusters:
+            - kotlin_cluster_1
+            - kotlin_cluster_2
+
+    #https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
+    - name: kotlin_cluster_1
       connect_timeout: 0.25s
       type: strict_dns
       lb_policy: round_robin
       http2_protocol_options: {}
       load_assignment:
-        cluster_name: kotlin_srvc_cluster
+        cluster_name: kotlin_cluster_1
         endpoints:
           - lb_endpoints:
               - endpoint:
@@ -54,11 +68,31 @@ static_resources:
                     socket_address:
                       address: 172.17.0.3
                       port_value: 8080
+            priority: 0
+          - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
                       address: 172.17.0.4
                       port_value: 8080
+            priority: 1
+      health_checks:
+        timeout: 0.25s
+        interval: 60s
+        unhealthy_threshold: 3
+        healthy_threshold: 1
+        http_health_check:
+          path: "/kotlin/healthy"
+
+    - name: kotlin_cluster_2
+      connect_timeout: 0.25s
+      type: strict_dns
+      lb_policy: round_robin
+      http2_protocol_options: {}
+      load_assignment:
+        cluster_name: kotlin_cluster_2
+        endpoints:
+          - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
@@ -81,6 +115,7 @@ static_resources:
         healthy_threshold: 1
         http_health_check:
           path: "/kotlin/healthy"
+
 
     - name: google_srvc_cluster
       connect_timeout: 0.25s

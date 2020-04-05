@@ -24,18 +24,30 @@ https://medium.com/@rkbalgi/my-experiment-with-aws-app-mesh-41600fe3189f
 https://medium.com/@rkbalgi/app-mesh-routing-internals-c0344d3527da
 
 
-## Notes for running aggregate cluster demo on envoy
-1. The relevant microservices are present in package _src/main/kotlin
+## Notes for running aggregate cluster demo on Envoyproxy
+
+Envoyproxy version - 
+<pre>
+/ # /usr/local/bin/envoy --version
+
+/usr/local/bin/envoy  version: b67c14052c49890a7e3afe614d50979c346c024b/1.13.1/Clean/RELEASE/BoringSSL
+</pre>
+
+1. The microservices used are present in package _src/main/kotlin_ and envoy files in _extras/envoy_
 2. Build the dockerfile for service using src/docker/Dockerfile.jvm and run 6 instances of it, make note of each instance ip and include it in envoy.yaml (see below) 
 3. Build the envoy using Dockerfile and envoy config file present in extras/envoy (may need to edit config file based on service instance ip's)
 
 
 ### Handy Commands
-
+#### Building and running envoy
+<pre>
 docker build -f Dockerfile_envoy -t local_envoy .
 docker run -d -p 8001:8001 -p 8002:8002 local_envoy
+</pre>
 
-I'm running 6 instances of the service - ports exposed 1130-1180. The path /kotlin/set_health?value=true|false turns individual ono/off health checks on the service
+I'm running 6 instances of the service - ports exposed 1130-1180. The service exposes below URL's -
+- The path /kotlin/test prints a Hello there! message (see below)
+- The path /kotlin/set_health?value=true|false turns individual ono/off health check 
 
 ### My services
 <pre>
@@ -57,5 +69,16 @@ Example of running a /kotlin/test
 λ curl http://192.168.99.100:8002/kotlin/test
 Hello there!!. The server is running @  d2bc2efb96ca/172.17.0.7: 8080 and the time is 2020-04-03T18:28:21.364939
 </pre>
+
+#### Cluster set up and Tests
+I have 3 instances in each cluster
+In kotlin_cluster_1, first two endpoints have priority 0 and the third one has priority 1
+In the second cluster, no priority is specified so all instances have priority 0
+
+Now, lets run the following tests 
+1. With all instances healthy - all requests will go to the first two instances of the first cluster (primary cluster with instances having priority 0)
+2. Set one of the p0 instance unhealthy - Now you should see request shared between remaining p0 instance and the p1 instance in cluster 1
+
+You can try more tests as describe here - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
 
  
