@@ -33,6 +33,7 @@ static_resources:
                 http_filters:
                   - name: envoy.router
                     typed_config: {}
+  #https://www.envoyproxy.io/docs/envoy/latest/api-v2/api/v2/cluster.proto
   clusters:
     - name: kotlin_srvc_cluster
       connect_timeout: 0.25s
@@ -73,6 +74,13 @@ static_resources:
                     socket_address:
                       address: 172.17.0.7
                       port_value: 8080
+      health_checks:
+        timeout: 0.25s
+        interval: 60s
+        unhealthy_threshold: 3
+        healthy_threshold: 1
+        http_health_check:
+          path: "/kotlin/healthy"
 
     - name: google_srvc_cluster
       connect_timeout: 0.25s
@@ -80,7 +88,7 @@ static_resources:
       lb_policy: round_robin
       http2_protocol_options: {}
       load_assignment:
-        cluster_name: service2
+        cluster_name: google_cluster
         endpoints:
           - lb_endpoints:
               - endpoint:
@@ -93,6 +101,7 @@ static_resources:
         typed_config:
           "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
           sni: www.google.com
+
 admin:
   access_log_path: "/dev/null"
   address:
