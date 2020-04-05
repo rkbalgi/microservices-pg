@@ -61,6 +61,17 @@ static_resources:
               "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
               common_tls_context:
                 alpn_protocols: [h2,http/1.1]
+        - name: "googleMTLS"
+          match:
+            isGoogleMTLS: true
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
+              sni: "www.google.com"
+              common_tls_context:
+                alpn_protocols: [h2,http/1.1]
+
         - name: "defaultToPlaintext"
           match: {}
           transport_socket:
@@ -108,7 +119,6 @@ static_resources:
                 metadata:
                   filter_metadata: {"envoy.transport_socket": {"acceptMTLS": true}}
             priority: 1
-
       transport_socket:
         name: envoy.transport_sockets.tls
         typed_config:
@@ -175,7 +185,9 @@ static_resources:
         name: envoy.transport_sockets.tls
         typed_config:
           "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
-          sni: www.google.com
+          common_tls_context:
+            alpn_protocols: [h2,http/1.1]
+          sni: "www.google.com"
 
 admin:
   access_log_path: "/dev/null"
