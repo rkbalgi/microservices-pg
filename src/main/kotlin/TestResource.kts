@@ -1,12 +1,16 @@
 package com.github.rkbalgi.demo.services.kotlin
 
 import org.eclipse.microprofile.config.inject.ConfigProperty
+import org.jboss.resteasy.spi.HttpRequest
 import java.net.InetAddress
 import java.time.LocalDateTime
+import javax.enterprise.context.RequestScoped
 import javax.inject.Inject
 import javax.ws.rs.GET
 import javax.ws.rs.Path
 import javax.ws.rs.QueryParam
+import javax.ws.rs.core.Context
+import javax.ws.rs.core.Request
 import javax.ws.rs.core.Response
 
 @Path("/kotlin")
@@ -20,11 +24,14 @@ class KotlinTestResource {
     @ConfigProperty(name = "quarkus.http.port")
     var serverPort: Int = 0
 
+    @Context
+    lateinit var req: HttpRequest
+
 
     @GET
     @Path("/test")
     fun test(): String {
-        return "Hello there!!. The server is running @  ${InetAddress.getLocalHost()}: $serverPort and the time is ${LocalDateTime.now()}"
+        return "Hello there!!. The server is running @ ${InetAddress.getLocalHost()} You've accessed - ${req.uri.path}: and the time is ${LocalDateTime.now()}"
     }
 
 

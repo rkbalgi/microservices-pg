@@ -1,12 +1,14 @@
 # base setup picked up from https://github.com/envoyproxy/envoy/blob/master/examples/front-proxy/front-envoy.yaml
 # see this if you face issues
 # - https://github.com/envoyproxy/envoy/issues/10105 (regarding the filter name)
+#https://github.com/envoyproxy/envoy/issues/8016 - regarding per endpoint  TLS
 static_resources:
   listeners:
     - address:
         socket_address:
           address: 0.0.0.0
           port_value: 8002
+
       filter_chains:
         - filters:
             - name: envoy.http_connection_manager
@@ -24,7 +26,7 @@ static_resources:
                         - match:
                             prefix: "/kotlin"
                           route:
-                            cluster: kotlin_srvc_cluster
+                            cluster: kotlin_aggr_cluster
                         - match:
                             prefix: "/"
                           route:
@@ -33,13 +35,36 @@ static_resources:
                 http_filters:
                   - name: envoy.router
                     typed_config: {}
-  #https://www.envoyproxy.io/docs/envoy/latest/api-v2/api/v2/cluster.proto
-  #https://github.com/envoyproxy/envoy/blob/86ac9389fa0ad940879352b012a0dc73d89b90b0/test/extensions/clusters/aggregate/cluster_integration_test.cc
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.api.v2.auth.DownstreamTlsContext
+              common_tls_context:
+                tls_certificates:
+                  certificate_chain: { "filename": "/etc/envoy/cert.crt" }
+                  private_key: { "filename": "/etc/envoy/cert.key" }
+
+
+  #ref: https://www.envoyproxy.io/docs/envoy/latest/api-v2/api/v2/cluster.proto
+  #ref: https://github.com/envoyproxy/envoy/blob/86ac9389fa0ad940879352b012a0dc73d89b90b0/test/extensions/clusters/aggregate/cluster_integration_test.cc
   clusters:
-    - name: kotlin_srvc_cluster
+    - name: kotlin_aggr_cluster
       connect_timeout: 0.25s
       lb_policy: CLUSTER_PROVIDED
-      http2_protocol_options: {}
+      transport_socket_matches:
+        - name: "enableMTLS"
+          match:
+            acceptMTLS: true
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
+              common_tls_context:
+                alpn_protocols: [h2,http/1.1]
+        - name: "defaultToPlaintext"
+          match: {}
+          transport_socket:
+            name: envoy.transport_sockets.raw_buffer
       cluster_type:
         name: envoy.clusters.aggregate
         typed_config:
@@ -48,12 +73,11 @@ static_resources:
             - kotlin_cluster_1
             - kotlin_cluster_2
 
-    #https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
+    #ref: https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
     - name: kotlin_cluster_1
       connect_timeout: 0.25s
       type: strict_dns
       lb_policy: round_robin
-      http2_protocol_options: {}
       load_assignment:
         cluster_name: kotlin_cluster_1
         endpoints:
@@ -62,20 +86,36 @@ static_resources:
                   address:
                     socket_address:
                       address: 172.17.0.2
-                      port_value: 8080
+                      port_value: 8443
+                metadata:
+                  filter_metadata:
+                    envoy.transport_socket:
+                      acceptMTLS: true
               - endpoint:
                   address:
                     socket_address:
                       address: 172.17.0.3
-                      port_value: 8080
+                      port_value: 8443
+                metadata:
+                  filter_metadata: {"envoy.transport_socket": {"acceptMTLS": true}}
             priority: 0
           - lb_endpoints:
               - endpoint:
                   address:
                     socket_address:
                       address: 172.17.0.4
-                      port_value: 8080
+                      port_value: 8443
+                metadata:
+                  filter_metadata: {"envoy.transport_socket": {"acceptMTLS": true}}
             priority: 1
+
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
+          common_tls_context:
+            alpn_protocols: [h2,http/1.1]
+
       health_checks:
         timeout: 0.25s
         interval: 60s
@@ -88,7 +128,6 @@ static_resources:
       connect_timeout: 0.25s
       type: strict_dns
       lb_policy: round_robin
-      http2_protocol_options: {}
       load_assignment:
         cluster_name: kotlin_cluster_2
         endpoints:
@@ -108,6 +147,7 @@ static_resources:
                     socket_address:
                       address: 172.17.0.7
                       port_value: 8080
+
       health_checks:
         timeout: 0.25s
         interval: 60s

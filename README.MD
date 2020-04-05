@@ -49,7 +49,7 @@ I'm running 6 instances of the service - ports exposed 1130-1180. The service ex
 - The path /kotlin/test prints a Hello there! message (see below)
 - The path /kotlin/set_health?value=true|false turns individual ono/off health check 
 
-### My services
+##### Example
 <pre>
 c:\Users\rkbal\IdeaProjects\appmesh-microsrvc\extras\envoy (master -> origin)
 λ docker ps
@@ -81,4 +81,57 @@ Now, lets run the following tests
 
 You can try more tests as describe here - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
 
- 
+
+### Enable SSL on Envoyproxy
+Generate a self-signed certificate (see below section) and enable transport_socket on the listener in envoy.yaml
+<pre>
+C:\Users\rkbal\IdeaProjects\appmesh-microsrvc\extras\envoy (master -> origin)
+λ curl -k  https://192.168.99.100:8002/kotlin/test
+Hello there!!. The server is running @  feda26a2c650/172.17.0.4: 8080 and the time is 2020-04-05T13:19:51.596696
+</pre>
+
+## Generating SSL self signed certificate
+<pre>
+OpenSSL> genrsa -out rsa_key.key
+Generating RSA private key, 2048 bit long modulus (2 primes)
+....................+++++
+....................................................................................................................................................................+++++
+e is 65537 (0x010001)
+OpenSSL> help
+
+OpenSSL> req -new -key rsa_key.key -out cert.csr
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]:IN
+State or Province Name (full name) [Some-State]:Karnataka
+Locality Name (eg, city) []:Bengaluru
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:daalitoi inc
+Organizational Unit Name (eg, section) []:dev
+Common Name (e.g. server FQDN or YOUR name) []:raghav
+Email Address []:rkbalgi@gmail.com
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []:
+An optional company name []:
+
+OpenSSL> x509 -req -in cert.csr -days 5000 -out cert.pem
+We need a private key to sign with
+error in x509
+OpenSSL> x509 -req -in cert.csr -signkey rsa_key.key -days 5000 -out cert.pem
+Signature ok
+subject=C = IN, ST = Karnataka, L = Bengaluru, O = daalitoi inc, OU = dev, CN = raghav, emailAddress = rkbalgi@gmail.com
+Getting Private key
+OpenSSL> 
+
+</pre>
+
+It looks like you can create a new key with a single command like this :-)
+<pre>
+openssl req -nodes -x509 -newkey rsa:4096 -keyout example-com.key -out example-com.crt -days 365
+</pre>

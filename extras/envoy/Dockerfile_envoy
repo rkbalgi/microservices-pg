@@ -1,4 +1,6 @@
 FROM envoyproxy/envoy-alpine:latest
 COPY ./envoy.yaml /etc/envoy/envoy.yaml
+COPY certs/cert.pem /etc/envoy/cert.crt
+COPY certs/rsa_key.key /etc/envoy/cert.key
 CMD /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
 
