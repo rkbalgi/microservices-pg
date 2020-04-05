@@ -44,8 +44,6 @@ Envoyproxy version -
 2. Build the dockerfile for service using src/docker/Dockerfile.jvm and run 6 instances of it, make note of each instance ip and include it in envoy.yaml (see below) 
 
 
-
-
 #### Building and running envoy
 Build the envoy using Dockerfile and envoy config file present in extras/envoy (may need to edit config file based on service instance ip's)
 
@@ -55,8 +53,8 @@ docker run -d -p 8001:8001 -p 8002:8002 local_envoy
 </pre>
 
 I'm running 6 instances of the service - ports exposed 1130-1180. The service exposes below URL's -
-- The path /kotlin/test prints a Hello there! message (see below)
-- The path /kotlin/set_health?value=true|false turns individual ono/off health check 
+- The path _/kotlin/test_ prints a Hello there! message (see below)
+- The path _/kotlin/set_health?value=true|false_ turns individual on/off health check 
 
 ##### Example
 <pre>
@@ -79,16 +77,15 @@ Example of running a /kotlin/test
 Hello there!!. The server is running @  d2bc2efb96ca/172.17.0.7: 8080 and the time is 2020-04-03T18:28:21.364939
 </pre>
 
-#### Aggrgate cluster set up and Tests
+#### Aggregate cluster set up and Tests
 I have 3 instances in each cluster
-In kotlin_cluster_1, first two endpoints have priority 0 and the third one has priority 1
-In the second cluster, no priority is specified so all instances have priority 0
+In kotlin_cluster_1, first two endpoints have priority 0 and the third one has priority 1. In the second cluster, no priority is specified so all instances have priority 0 by default.
 
 Now, lets run the following tests 
 1. With all instances healthy - all requests will go to the first two instances of the first cluster (primary cluster with instances having priority 0)
 2. Set one of the p0 instance unhealthy - Now you should see request shared between remaining p0 instance and the p1 instance in cluster 1
 
-You can try more tests as describe here - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
+You can try more variations and check the math as describe here - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
 
 
 ### Enable SSL on Envoyproxy
@@ -140,7 +137,8 @@ OpenSSL>
 
 </pre>
 
-It looks like you can create a new key with a single command like this :-)
+OR
+
 <pre>
 openssl req -nodes -x509 -newkey rsa:4096 -keyout example-com.key -out example-com.crt -days 365
 </pre>

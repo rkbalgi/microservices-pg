@@ -172,18 +172,8 @@ static_resources:
       type: strict_dns
       lb_policy: round_robin
       http2_protocol_options: {}
-      transport_socket_matches:
-        - name: "defaultToTLS"
-          match: {}
-          transport_socket:
-            name: envoy.transport_sockets.tls
-            typed_config:
-              "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
-              sni: "www.google.com"
-              common_tls_context:
-                alpn_protocols: [h2,http/1.1]
       load_assignment:
-        cluster_name: google_cluster
+        cluster_name: google_srvc_cluster
         endpoints:
           - lb_endpoints:
               - endpoint:
