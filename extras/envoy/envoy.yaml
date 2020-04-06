@@ -61,21 +61,11 @@ static_resources:
               "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
               common_tls_context:
                 alpn_protocols: [h2,http/1.1]
-        - name: "googleMTLS"
-          match:
-            isGoogleMTLS: true
-          transport_socket:
-            name: envoy.transport_sockets.tls
-            typed_config:
-              "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
-              sni: "www.google.com"
-              common_tls_context:
-                alpn_protocols: [h2,http/1.1]
-
         - name: "defaultToPlaintext"
           match: {}
           transport_socket:
             name: envoy.transport_sockets.raw_buffer
+
       cluster_type:
         name: envoy.clusters.aggregate
         typed_config:
@@ -89,6 +79,20 @@ static_resources:
       connect_timeout: 0.25s
       type: strict_dns
       lb_policy: round_robin
+      transport_socket_matches:
+        - name: "enableMTLS"
+          match:
+            acceptMTLS: "true"
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
+              common_tls_context:
+                alpn_protocols: [h2,http/1.1]
+        - name: "defaultToPlaintext"
+          match: {}
+          transport_socket:
+            name: envoy.transport_sockets.raw_buffer
       load_assignment:
         cluster_name: kotlin_cluster_1
         endpoints:
@@ -96,35 +100,27 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 172.17.0.2
-                      port_value: 8443
-                metadata:
-                  filter_metadata:
-                    envoy.transport_socket:
-                      acceptMTLS: true
-              - endpoint:
-                  address:
-                    socket_address:
                       address: 172.17.0.3
                       port_value: 8443
                 metadata:
-                  filter_metadata: {"envoy.transport_socket": {"acceptMTLS": true}}
-            priority: 0
-          - lb_endpoints:
+                  filter_metadata:
+                    envoy.transport_socket_match:
+                      acceptMTLS: "true"
               - endpoint:
                   address:
                     socket_address:
                       address: 172.17.0.4
                       port_value: 8443
                 metadata:
-                  filter_metadata: {"envoy.transport_socket": {"acceptMTLS": true}}
+                  filter_metadata: {"envoy.transport_socket_match": {"acceptMTLS": "true"}}
+            priority: 0
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 172.17.0.5
+                      port_value: 8080
             priority: 1
-      transport_socket:
-        name: envoy.transport_sockets.tls
-        typed_config:
-          "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
-          common_tls_context:
-            alpn_protocols: [h2,http/1.1]
 
       health_checks:
         timeout: 0.25s
@@ -145,17 +141,17 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 172.17.0.5
-                      port_value: 8080
-              - endpoint:
-                  address:
-                    socket_address:
                       address: 172.17.0.6
                       port_value: 8080
               - endpoint:
                   address:
                     socket_address:
                       address: 172.17.0.7
+                      port_value: 8080
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 172.17.0.8
                       port_value: 8080
 
       health_checks:
