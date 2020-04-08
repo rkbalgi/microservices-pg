@@ -165,9 +165,9 @@ static_resources:
 
     - name: google_srvc_cluster
       connect_timeout: 0.25s
-      type: strict_dns
-      lb_policy: round_robin
-      http2_protocol_options: {}
+      type: LOGICAL_DNS
+      lb_policy: ROUND_ROBIN
+      dns_lookup_family: V4_ONLY
       load_assignment:
         cluster_name: google_srvc_cluster
         endpoints:
