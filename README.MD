@@ -78,17 +78,18 @@ Hello there!!. The server is running @  d2bc2efb96ca/172.17.0.7: 8080 and the ti
 </pre>
 
 #### Aggregate cluster set up and Tests
-I have 3 instances in each cluster
-In kotlin_cluster_1, first two endpoints have priority 0 and the third one has priority 1. In the second cluster, no priority is specified so all instances have priority 0 by default.
+I have 3 instances in each cluster.
 
-Now, lets run the following tests 
-1. With all instances healthy - all requests will go to the first two instances of the first cluster (primary cluster with instances having priority 0)
+In the kotlin_cluster_1, first two endpoints have priority 0 (p0) and the third one has priority 1 (p1). In the second cluster, no priority is specified so all instances have p0 by default.
+
+Now, lets run the following tests -
+1. With all instances healthy - all requests will go to the first two instances of the first cluster (primary cluster with instances having p0)
 2. Set one of the p0 instance unhealthy - Now you should see request shared between remaining p0 instance and the p1 instance in cluster 1
 
-You can try more variations and check the math as describe here - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
+You can try more variations and check the math as described here - https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/aggregate_cluster
 
 
-### Enable SSL on Envoyproxy
+#### Enable SSL on Envoyproxy
 Generate a self-signed certificate (see below section) and enable transport_socket on the listener in envoy.yaml
 <pre>
 C:\Users\rkbal\IdeaProjects\appmesh-microsrvc\extras\envoy (master -> origin)
@@ -96,7 +97,7 @@ C:\Users\rkbal\IdeaProjects\appmesh-microsrvc\extras\envoy (master -> origin)
 Hello there!!. The server is running @  feda26a2c650/172.17.0.4: 8080 and the time is 2020-04-05T13:19:51.596696
 </pre>
 
-#### Generating SSL self signed certificate
+##### Generating SSL self signed certificate
 <pre>
 OpenSSL> genrsa -out rsa_key.key
 Generating RSA private key, 2048 bit long modulus (2 primes)
